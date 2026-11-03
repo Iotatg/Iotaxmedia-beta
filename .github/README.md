@@ -1,5 +1,7 @@
 # iotaxmedia (beta)
 
+Repository: https://github.com/Iotatg/Iotaxmedia-beta
+
 A powerful Telegram music bot for group voice chats, supporting high-quality
 audio and video streaming. This is the beta line of IotaXMedia, managed with
 [uv](https://docs.astral.sh/uv/) and packaged as the `iotaxmedia` module.
@@ -34,8 +36,8 @@ audio and video streaming. This is the beta line of IotaXMedia, managed with
 
 ```bash
 # Clone the repository
-git clone https://github.com/Iotatg/Iota.git
-cd Iota/iotaxmedia-beta
+git clone https://github.com/Iotatg/Iotaxmedia-beta.git
+cd Iotaxmedia-beta
 
 # Install uv, then sync dependencies
 curl -LsSf https://astral.sh/uv/install.sh | sh
