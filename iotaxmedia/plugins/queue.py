@@ -1,0 +1,68 @@
+# Authored By Iota Coders © 2025-2026
+# SPDX-License-Identifier: MIT
+from pyrogram import filters, types
+
+from iotaxmedia import app, config, db, lang, queue, thumb
+from iotaxmedia.helpers import Track, buttons
+from iotaxmedia.plugins.anonymous import ANON_NAME
+
+
+@app.on_message(filters.command(["queue", "playing"]) & filters.group & ~app.bl_users)
+@lang.language()
+async def _queue_func(_, m: types.Message):
+    if not await db.get_call(m.chat.id):
+        return await m.reply_text(m.lang["not_playing"])
+
+    _reply = await m.reply_text(m.lang["queue_fetching"])
+    _queue = queue.get_queue(m.chat.id)
+    _media = _queue[0]
+    _thumb = (
+        (
+            await thumb.generate(_media)
+            if isinstance(_media, Track)
+            else config.DEFAULT_THUMB
+        )
+        if config.THUMB_GEN
+        else None
+    )
+    _requester_id = getattr(_media, "user_id", None)
+    _display_user = (
+        ANON_NAME
+        if _requester_id and await db.is_anon(_requester_id)
+        else _media.user
+    )
+    _text = m.lang["queue_curr"].format(
+        _media.url,
+        _media.title[:50],
+        _media.duration,
+        _display_user,
+    )
+    _queue.pop(0)
+
+    if _queue:
+        _text += "<blockquote expandable>"
+        for i, media in enumerate(_queue, start=1):
+            if i == 15:
+                break
+            _text += m.lang["queue_item"].format(i + 1, media.title, media.duration)
+        _text += "</blockquote>"
+
+    _playing = await db.playing(m.chat.id)
+    _buttons = buttons.queue_markup(
+        m.chat.id,
+        m.lang["playing"] if _playing else m.lang["paused"],
+        _playing,
+    )
+    if thumb:
+        await _reply.edit_media(
+            media=types.InputMediaPhoto(
+                media=_thumb,
+                caption=_text,
+            ),
+            reply_markup=_buttons,
+        )
+    else:
+        await _reply.edit_text(
+            text=_text,
+            reply_markup=_buttons,
+        )
